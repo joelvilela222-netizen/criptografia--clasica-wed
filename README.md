@@ -11,7 +11,7 @@ Este proyecto consiste en el diseño e implementación de una página web accesi
 ## Acceso a la aplicación
 La aplicación web se encuentra disponible en la siguiente URL pública:
 
-https://joelivela222-internauta.github.io/criptografia-clasica-web/
+https://http://44.192.45.13
 
 ## Tecnologías utilizadas
 - HTML5

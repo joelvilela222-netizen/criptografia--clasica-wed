@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Aplicación Web de Criptografía</title>
+
+<!-- Librería AES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    max-width: 700px;
+    margin: auto;
+    padding: 20px;
+}
+h1 {
+    text-align: center;
+}
+label {
+    font-weight: bold;
+}
+textarea, input, select {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+}
+button {
+    padding: 10px;
+    margin: 5px;
+}
+</style>
+</head>
+<body>
+
+<h1>Aplicación Web de Criptografía</h1>
+
+<label>Texto plano:</label>
+<textarea id="plain" rows="4"></textarea>
+
+<label>Clave:</label>
+<input type="text" id="key" placeholder="Número o texto según algoritmo">
+
+<label>Algoritmo:</label>
+<select id="algorithm">
+    <option value="caesar">Cifrado César</option>
+    <option value="vigenere">Vigenère</option>
+    <option value="aes">AES</option>
+    <option value="atbash">Atbash</option>
+</select>
+
+<button onclick="encrypt()">Cifrar</button>
+<button onclick="decrypt()">Descifrar</button>
+
+<label>Texto cifrado:</label>
+<textarea id="cipher" rows="4"></textarea>
+
+<label>Texto descifrado:</label>
+<textarea id="decrypted" rows="4" readonly></textarea>
+
+<script>
+// UTILIDADES
+function parseShift(value){
+    let n=parseInt(value);
+    if(isNaN(n)) {
+        alert("La clave para César debe ser un número válido.");
+        return 0;
+    }
+    return n;
+}
+
+// CÉSAR
+function caesarEncrypt(text,shift){
+    shift=shift%26;
+    let res="";
+    for(let c of text){
+        if(c>='a'&&c<='z') res+=String.fromCharCode((c.charCodeAt(0)-97+shift+26)%26+97);
+        else if(c>='A'&&c<='Z') res+=String.fromCharCode((c.charCodeAt(0)-65+shift+26)%26+65);
+        else res+=c;
+    }
+    return res;
+}
+function caesarDecrypt(text,shift){
+    return caesarEncrypt(text,-shift);
+}
+
+// VIGENÈRE
+function vigenereEncrypt(text,key){
+    let res="",j=0;
+    key=key.toLowerCase();
+    for(let c of text){
+        if(c>='a'&&c<='z'){
+            let k=key[j%key.length].charCodeAt(0)-97;
+            res+=String.fromCharCode((c.charCodeAt(0)-97+k)%26+97);
+            j++;
+        } else if(c>='A'&&c<='Z'){
+            let k=key[j%key.length].charCodeAt(0)-97;
+            res+=String.fromCharCode((c.charCodeAt(0)-65+k)%26+65);
+            j++;
+        } else res+=c;
+    }
+    return res;
+}
+function vigenereDecrypt(text,key){
+    let res="",j=0;
+    key=key.toLowerCase();
+    for(let c of text){
+        if(c>='a'&&c<='z'){
+            let k=key[j%key.length].charCodeAt(0)-97;
+            res+=String.fromCharCode((c.charCodeAt(0)-97-k+26)%26+97);
+            j++;
+        } else if(c>='A'&&c<='Z'){
+            let k=key[j%key.length].charCodeAt(0)-97;
+            res+=String.fromCharCode((c.charCodeAt(0)-65-k+26)%26+65);
+            j++;
+        } else res+=c;
+    }
+    return res;
+}
+
+// AES
+function aesEncrypt(text,key){
+    if(!key) return "Error: clave vacía";
+    return CryptoJS.AES.encrypt(text,key).toString();
+}
+function aesDecrypt(cipher,key){
+    if(!key) return "Error: clave vacía";
+    try{
+        return CryptoJS.AES.decrypt(cipher,key).toString(CryptoJS.enc.Utf8) || "Error: clave incorrecta o texto inválido";
+    }catch(e){
+        return "Error: clave incorrecta o texto inválido";
+    }
+}
+
+// ATBASH
+function atbashTransform(text){
+    let res="";
+    for(let c of text){
+        if(c>='a'&&c<='z'){
+            res+=String.fromCharCode(122-(c.charCodeAt(0)-97)); // 'z'=122
+        } else if(c>='A'&&c<='Z'){
+            res+=String.fromCharCode(90-(c.charCodeAt(0)-65)); // 'Z'=90
+        } else {
+            res+=c;
+        }
+    }
+    return res;
+}
+function atbashEncrypt(text){ return atbashTransform(text); }
+function atbashDecrypt(text){ return atbashTransform(text); }
+
+// CONTROL GENERAL
+function encrypt(){
+    const text=document.getElementById("plain").value;
+    const key=document.getElementById("key").value;
+    const alg=document.getElementById("algorithm").value;
+    let out="";
+    if(alg==="caesar") out=caesarEncrypt(text,parseShift(key));
+    if(alg==="vigenere") out=vigenereEncrypt(text,key);
+    if(alg==="aes") out=aesEncrypt(text,key);
+    if(alg==="atbash") out=atbashEncrypt(text);
+    document.getElementById("cipher").value=out;
+}
+
+function decrypt(){
+    const cipher=document.getElementById("cipher").value;
+    const key=document.getElementById("key").value;
+    const alg=document.getElementById("algorithm").value;
+    let out="";
+    if(alg==="caesar") out=caesarDecrypt(cipher,parseShift(key));
+    if(alg==="vigenere") out=vigenereDecrypt(cipher,key);
+    if(alg==="aes") out=aesDecrypt(cipher,key);
+    if(alg==="atbash") out=atbashDecrypt(cipher);
+    document.getElementById("decrypted").value=out;
+}
+</script>
+
+</body>
+</html>
